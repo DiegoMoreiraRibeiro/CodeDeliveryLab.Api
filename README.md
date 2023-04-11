@@ -14,11 +14,11 @@ Kotlin
 
 <br>
  
-## Fluxo e Atividades
+## Fluxo e Atividades para Colaboração
 
 Todas as issue's estão listadas aqui: https://github.com/users/DiegoMoreiraRibeiro/projects/3/views/1
 
-Cada issue é convertida em uma branch (Seguir a opção de criar uma branch partindo da issue).
+Cada issue é convertida em uma branch (Seguir a opção de criar uma branch partindo da issue). É importante atribuir, assinalar e movimentar cada atividade para evitar que mais de uma pessoa trabalhe na mesma issue.
 
 As branches pegam como base para a development. 
 
