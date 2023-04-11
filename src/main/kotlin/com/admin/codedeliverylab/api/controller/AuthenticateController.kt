@@ -17,4 +17,5 @@ class AuthenticateController(private var authenticateService: AuthenticateServic
         return authenticateService.auth();
     }
 
+
 }
