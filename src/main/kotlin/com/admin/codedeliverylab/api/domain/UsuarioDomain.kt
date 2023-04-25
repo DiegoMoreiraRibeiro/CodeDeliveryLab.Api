@@ -99,9 +99,5 @@ class UsuarioDomain() {
         }
     }
 
-    private fun hashMD5(senha: String): String {
-        val md = MessageDigest.getInstance("MD5")
-        val digest = md.digest(senha.toByteArray())
-        return digest.fold("") { str, it -> str + "%02x".format(it) }
-    }
+
 }
