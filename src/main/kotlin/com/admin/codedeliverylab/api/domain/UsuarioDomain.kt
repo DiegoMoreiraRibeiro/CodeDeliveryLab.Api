@@ -1,37 +1,101 @@
 package com.admin.codedeliverylab.api.domain
 
 
+import com.admin.codedeliverylab.api.controller.dto.request.RequestBodyUsuario
+import com.admin.codedeliverylab.api.controller.dto.response.UsuarioResponse
 import com.admin.codedeliverylab.api.entities.Usuario
-import com.admin.codedeliverylab.api.repository.UsuarioRepository
-import okhttp3.internal.wait
-import org.springframework.data.repository.findByIdOrNull
+import com.admin.codedeliverylab.api.services.interfaces.AuthenticateServices
+import com.admin.codedeliverylab.api.services.interfaces.UsuarioService
+import com.admin.codedeliverylab.api.utils.*
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 import java.security.MessageDigest
 
 class UsuarioDomain() {
 
-    private lateinit var _usuario: Usuario
-    private lateinit var _usuarioRepository: UsuarioRepository
+    private var usuario: Usuario? = null
+    private lateinit var usuarioService: UsuarioService
+    private lateinit var authenticateServices: AuthenticateServices
 
-    constructor(usuario: Usuario, usuarioRepository: UsuarioRepository) : this() {
-        this._usuario = usuario
-        this._usuarioRepository = usuarioRepository
+    constructor(usuarioService: UsuarioService, authenticateServices: AuthenticateServices) : this() {
+        this.usuarioService = usuarioService
+        this.authenticateServices = authenticateServices
     }
 
-    fun preparaUsuario(): Usuario {
+    fun setUsuario(usuario: Usuario) = usuario.also { this.usuario = it }
+
+
+    fun salvarUsuario(requestBodyUsuario: RequestBodyUsuario): UsuarioResponse {
         try {
-            // TODO: Criar validação de email
-
-            if (_usuario.id == null) _usuario.senha = hashMD5(_usuario.senha)
-            else {
-
-                var usuario: Usuario? = _usuarioRepository.findByIdOrNull(_usuario.id!!) ?: throw Exception("Usuário não encontrado")
-
-                if(usuario?.senha != _usuario.senha) _usuario.senha = hashMD5(_usuario.senha)
-
-            }
-            return _usuario
+            val usuarioEntity = preparaUsuario(mapObject(requestBodyUsuario, Usuario::class))
+            return mapObject(usuarioEntity, UsuarioResponse::class)
         } catch (ex: Exception) {
-            throw ex
+            throw Exception("Erro ao salvarUsuario")
+        }
+    }
+
+    fun listarUsuarios(): List<UsuarioResponse> {
+        try {
+            return mapList(usuarioService.getUsuarios(), UsuarioResponse::class)
+        } catch (ex: Exception) {
+            throw Exception("Erro ao listarUsuarios")
+        }
+    }
+
+    fun listarUsuario(id: Long): UsuarioResponse {
+        return try {
+            var teste: Usuario? = usuarioService.getUsuarioById(id) ?: throw Exception("Usuário não encontrado")
+            UsuarioResponse(
+                id = teste?.id,
+                nome = teste!!.nome,
+                login = teste.login,
+                role = teste.role,
+                email = teste.email,
+                senha = teste.senha
+            )
+        } catch (ex: Exception) {
+            throw Exception("Erro ao salvarUsuario")
+        }
+    }
+
+    private fun preparaUsuario(usuario: Usuario): Usuario {
+        try {
+            if (usuario.id == null) usuario.senha = hashMD5(usuario.senha)
+            else {
+                var u = usuarioService.getUsuarioById(usuario.id) ?: throw Exception("Usuário não encontrado")
+                if (u.senha != usuario.senha) usuario.senha = hashMD5(usuario.senha)
+            }
+            return usuario
+        } catch (ex: Exception) {
+            throw Exception("Erro ao preparaUsuario")
+        }
+    }
+
+    fun validarLogin(email: String, senha: String): String {
+        try {
+            val usuario = usuarioService.validateLoginUsuario(email, hashMD5(senha)) ?: throw Exception()
+            val authorities: Collection<GrantedAuthority> =
+                listOf(SimpleGrantedAuthority(usuario.role))
+
+            return authenticateServices.gerarToken(
+                UsernamePasswordAuthenticationToken(
+                    email,
+                    senha, authorities
+                )
+            )
+
+        } catch (ex: Exception) {
+            throw Exception("Não validarLogin")
+        }
+    }
+
+    fun removerUsuario(id: Long): String {
+        try {
+            usuarioService.deleteUsuario(id)
+            return "Removido com sucesso"
+        } catch (ex: Exception) {
+            throw Exception("Erro ao removerUsuario")
         }
     }
 

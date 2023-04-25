@@ -2,7 +2,9 @@ package com.admin.codedeliverylab.api.controller
 
 import com.admin.codedeliverylab.api.controller.dto.request.RequestBodyUsuario
 import com.admin.codedeliverylab.api.controller.dto.response.UsuarioResponse
-import com.admin.codedeliverylab.api.services.interfaces.IUsuarioService
+import com.admin.codedeliverylab.api.domain.UsuarioDomain
+import com.admin.codedeliverylab.api.services.interfaces.AuthenticateServices
+import com.admin.codedeliverylab.api.services.interfaces.UsuarioService
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -17,8 +19,11 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/usuario")
 class UsuarioController(
-    private val usuarioService: IUsuarioService
+    private val usuarioService: UsuarioService,
+    private val authenticateServices: AuthenticateServices
 ) {
+
+    private val usuarioDomain: UsuarioDomain = UsuarioDomain(usuarioService, authenticateServices)
 
     @PostMapping("")
     fun addUsuario(
@@ -26,7 +31,7 @@ class UsuarioController(
         body: RequestBodyUsuario
     ): ResponseEntity<UsuarioResponse> {
         return try {
-            ResponseEntity.ok().body(usuarioService.saveUsuario(body))
+            ResponseEntity.ok().body(usuarioDomain.salvarUsuario(body))
         } catch (ex: Exception) {
             throw ex
         }
@@ -38,7 +43,7 @@ class UsuarioController(
         body: RequestBodyUsuario
     ): ResponseEntity<UsuarioResponse> {
         return try {
-            ResponseEntity.ok().body(usuarioService.saveUsuario(body))
+            ResponseEntity.ok().body(usuarioDomain.salvarUsuario(body))
         } catch (ex: Exception) {
             throw ex
         }
@@ -48,7 +53,7 @@ class UsuarioController(
     fun get(
     ): ResponseEntity<List<UsuarioResponse>> {
         return try {
-            ResponseEntity.ok().body(usuarioService.getUsuarios())
+            ResponseEntity.ok().body(usuarioDomain.listarUsuarios())
         } catch (ex: Exception) {
             throw ex
         }
@@ -59,7 +64,7 @@ class UsuarioController(
         @PathVariable id: Long,
     ): ResponseEntity<UsuarioResponse> {
         return try {
-            ResponseEntity.ok().body(usuarioService.getUsuarioById(id))
+            ResponseEntity.ok().body(usuarioDomain.listarUsuario(id))
         } catch (ex: Exception) {
             throw ex
         }
@@ -70,7 +75,7 @@ class UsuarioController(
         @PathVariable id: Long,
     ): String {
          try {
-            usuarioService.deleteUsuario(id)
+             usuarioDomain.removerUsuario(id)
              return ""
         } catch (ex: Exception) {
             throw ex
