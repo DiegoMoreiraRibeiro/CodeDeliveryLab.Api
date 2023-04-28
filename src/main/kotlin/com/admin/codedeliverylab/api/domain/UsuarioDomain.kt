@@ -6,33 +6,26 @@ import com.admin.codedeliverylab.api.controller.dto.response.UsuarioResponse
 import com.admin.codedeliverylab.api.entities.Usuario
 import com.admin.codedeliverylab.api.services.interfaces.AuthenticateServices
 import com.admin.codedeliverylab.api.services.interfaces.UsuarioService
-import com.admin.codedeliverylab.api.utils.*
+import com.admin.codedeliverylab.api.utils.hashMD5
+import com.admin.codedeliverylab.api.utils.mapList
+import com.admin.codedeliverylab.api.utils.mapObject
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
-import java.security.MessageDigest
 
-class UsuarioDomain() {
+class UsuarioDomain(
+        private val usuarioService: UsuarioService,
+        private val authenticateServices: AuthenticateServices,
+) {
 
     private var usuario: Usuario? = null
-    private lateinit var usuarioService: UsuarioService
-    private lateinit var authenticateServices: AuthenticateServices
-
-    constructor(usuarioService: UsuarioService, authenticateServices: AuthenticateServices) : this() {
-        this.usuarioService = usuarioService
-        this.authenticateServices = authenticateServices
-    }
-
     fun setUsuario(usuario: Usuario) = usuario.also { this.usuario = it }
 
-
     fun salvarUsuario(requestBodyUsuario: RequestBodyUsuario): UsuarioResponse {
-        try {
-            val usuarioEntity = preparaUsuario(mapObject(requestBodyUsuario, Usuario::class))
-            return mapObject(usuarioEntity, UsuarioResponse::class)
-        } catch (ex: Exception) {
-            throw Exception("Erro ao salvarUsuario")
-        }
+
+        val usuarioEntity = preparaUsuario(mapObject(requestBodyUsuario, Usuario::class))
+        return mapObject(usuarioService.saveUsuario(usuarioEntity), UsuarioResponse::class)
+
     }
 
     fun listarUsuarios(): List<UsuarioResponse> {
@@ -47,12 +40,10 @@ class UsuarioDomain() {
         return try {
             var teste: Usuario? = usuarioService.getUsuarioById(id) ?: throw Exception("Usuário não encontrado")
             UsuarioResponse(
-                id = teste?.id,
-                nome = teste!!.nome,
-                login = teste.login,
-                role = teste.role,
-                email = teste.email,
-                senha = teste.senha
+                    id = teste?.id,
+                    nome = teste!!.nome,
+                    role = teste.role,
+                    email = teste.email,
             )
         } catch (ex: Exception) {
             throw Exception("Erro ao salvarUsuario")
@@ -61,11 +52,13 @@ class UsuarioDomain() {
 
     private fun preparaUsuario(usuario: Usuario): Usuario {
         try {
-            if (usuario.id == null) usuario.senha = hashMD5(usuario.senha)
+            if (usuario.id == null || usuario.id.toInt() == 0) usuario.senha = hashMD5(usuario.senha)
             else {
-                var u = usuarioService.getUsuarioById(usuario.id) ?: throw Exception("Usuário não encontrado")
-                if (u.senha != usuario.senha) usuario.senha = hashMD5(usuario.senha)
+                val u = usuarioService.getUsuarioById(usuario.id) ?: throw Exception("Usuário não encontrado")
+                if (usuario.senha != "" && u.senha != usuario.senha) usuario.senha = hashMD5(usuario.senha)
+                else usuario.senha = u.senha
             }
+            usuario.role = "ADMIN"
             return usuario
         } catch (ex: Exception) {
             throw Exception("Erro ao preparaUsuario")
@@ -76,17 +69,17 @@ class UsuarioDomain() {
         try {
             val usuario = usuarioService.validateLoginUsuario(email, hashMD5(senha)) ?: throw Exception()
             val authorities: Collection<GrantedAuthority> =
-                listOf(SimpleGrantedAuthority(usuario.role))
+                    listOf(SimpleGrantedAuthority(usuario.role))
 
             return authenticateServices.gerarToken(
-                UsernamePasswordAuthenticationToken(
-                    email,
-                    senha, authorities
-                )
+                    UsernamePasswordAuthenticationToken(
+                            email,
+                            senha, authorities
+                    )
             )
 
         } catch (ex: Exception) {
-            throw Exception("Não validarLogin")
+            throw Exception("Não autorizado")
         }
     }
 

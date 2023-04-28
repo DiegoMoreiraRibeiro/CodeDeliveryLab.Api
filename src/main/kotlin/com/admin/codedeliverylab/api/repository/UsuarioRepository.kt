@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface UsuarioRepository : JpaRepository<Usuario, Long>{
-    fun findByLogin(login: String) : Usuario
-    fun findByLoginAndSenha(login: String, senha: String) : Usuario
+interface UsuarioRepository : JpaRepository<Usuario, Long> {
+    fun findByEmail(email: String): Usuario
+    fun findByEmailAndSenha(email: String, senha: String): Usuario
 }
