@@ -9,8 +9,10 @@ Obrigado pela sua contribuição!
 
 <br>
 
-## Stack utilizada
-Kotlin
+## Stack's
+Kotlin <br>
+RabbitMQ <br>
+Karate
 
 <br>
  
