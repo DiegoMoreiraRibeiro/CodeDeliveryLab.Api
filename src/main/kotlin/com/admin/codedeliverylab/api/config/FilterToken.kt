@@ -23,8 +23,8 @@ class FilterToken : OncePerRequestFilter() {
     private val usuarioRepository: UsuarioRepository? = null
 
     override fun doFilterInternal(
-        request: HttpServletRequest,
-        response: HttpServletResponse, filterChain: FilterChain
+            request: HttpServletRequest,
+            response: HttpServletResponse, filterChain: FilterChain,
     ) {
         try {
             val token: String
@@ -32,18 +32,18 @@ class FilterToken : OncePerRequestFilter() {
             if (authorizationHeader != null) {
                 token = authorizationHeader.replace("Bearer ", "")
                 val subject: String = authenticateService?.getSubject(token) ?: throw Exception("Token não encontrado")
-                val usuario =  usuarioRepository?.findByLogin(subject) ?: throw Exception("Usuario não encontrado")
+                val usuario = usuarioRepository?.findByEmail(subject) ?: throw Exception("Usuario não encontrado")
 
                 val authorities: Collection<GrantedAuthority> =
-                    listOf(SimpleGrantedAuthority(usuario.role))
+                        listOf(SimpleGrantedAuthority(usuario.role))
 
                 val authentication = UsernamePasswordAuthenticationToken(
-                    usuario.email,usuario.senha, authorities
+                        usuario.email, usuario.senha, authorities
                 )
                 SecurityContextHolder.getContext().authentication = authentication
             }
             filterChain.doFilter(request, response)
-        }catch (ex: Exception){
+        } catch (ex: Exception) {
             throw Exception(ex)
         }
 

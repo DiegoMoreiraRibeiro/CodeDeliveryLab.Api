@@ -28,17 +28,17 @@ class Configurations {
     @Throws(Exception::class)
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         return http.csrf().disable()
-            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and()
-            .authorizeHttpRequests()
-            .requestMatchers(HttpMethod.GET,  "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/api-docs/**")
-            .permitAll()
-            .requestMatchers(HttpMethod.POST, "/api/authenticate/login")
-            .permitAll()
-            .anyRequest().authenticated()
-            .and()
-            .addFilterBefore(filter, UsernamePasswordAuthenticationFilter::class.java)
-            .build()
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .authorizeHttpRequests()
+                .requestMatchers(HttpMethod.GET, "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/api-docs/**")
+                .permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/authenticate/login")
+                .permitAll()
+                .anyRequest().authenticated()
+                .and()
+                .addFilterBefore(filter, UsernamePasswordAuthenticationFilter::class.java)
+                .build()
     }
 
     @Bean

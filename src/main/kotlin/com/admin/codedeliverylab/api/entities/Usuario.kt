@@ -7,25 +7,22 @@ import org.springframework.security.core.userdetails.UserDetails
 
 @Entity
 @Table(name = "usuario")
-data class Usuario (
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
+data class Usuario(
+        @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+        val id: Long? = null,
 
-    @Column(name = "nome")
-    val nome: String,
+        @Column(name = "nome")
+        val nome: String,
 
-    @Column(name = "login")
-    val login: String,
+        @Column(name = "role")
+        var role: String = "",
 
-    @Column(name = "role")
-    val role: String,
+        @Column(name = "email")
+        val email: String,
 
-    @Column(name = "email")
-    val email: String,
-
-    @Column(name = "senha")
-    var senha: String
-): UserDetails {
+        @Column(name = "senha")
+        var senha: String,
+) : UserDetails {
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
         return mutableListOf(SimpleGrantedAuthority(role))
     }
@@ -35,7 +32,7 @@ data class Usuario (
     }
 
     override fun getUsername(): String {
-        return login
+        return email
     }
 
     override fun isAccountNonExpired(): Boolean {

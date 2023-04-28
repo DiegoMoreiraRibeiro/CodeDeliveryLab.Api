@@ -7,8 +7,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 data class UsuarioResponse(
     val id: Long? = null,
     val nome: String,
-    val login: String,
     val role: String,
     val email: String,
-    var senha: String
 )

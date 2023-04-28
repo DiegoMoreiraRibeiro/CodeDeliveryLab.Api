@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class UsuarioServiceImpl(
-    private val usuarioRepository: UsuarioRepository
+        private val usuarioRepository: UsuarioRepository,
 ) : UsuarioService {
 
     override fun saveUsuario(usuario: Usuario): Usuario {
@@ -28,9 +28,9 @@ class UsuarioServiceImpl(
         }
     }
 
-    override fun validateLoginUsuario(login: String, senha: String): Usuario? {
+    override fun validateLoginUsuario(email: String, senha: String): Usuario? {
         try {
-            return usuarioRepository.findByLoginAndSenha(login , senha )
+            return usuarioRepository.findByEmailAndSenha(email, senha)
         } catch (ex: Exception) {
             throw ex
         }
@@ -47,7 +47,7 @@ class UsuarioServiceImpl(
 
     override fun deleteUsuario(id: Long) {
         try {
-             usuarioRepository.deleteById(id)
+            usuarioRepository.deleteById(id)
         } catch (ex: Exception) {
             throw ex
         }
